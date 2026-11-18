@@ -15,11 +15,9 @@ public class OrderController(IOrderService orderService) : ControllerBase
     public ActionResult<Order> GetById(long id) => Handle(() => orderService.GetById(id));
 
     [HttpPost]
-    public ActionResult<Order> Create(CreateOrderRequest request)
-    {
-        var order = orderService.Create(request.Description);
-        return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
-    }
+    public ActionResult<Order> Create(CreateOrderRequest request) =>
+        Handle(() => orderService.Create(request.Description),
+            order => CreatedAtAction(nameof(GetById), new { id = order.Id }, order));
 
     [HttpPut("{id:long}/ship")]
     public ActionResult<Order> Ship(long id) => Handle(() => orderService.Ship(id));
@@ -30,15 +28,20 @@ public class OrderController(IOrderService orderService) : ControllerBase
     [HttpDelete("{id:long}/cancel")]
     public ActionResult<Order> Cancel(long id) => Handle(() => orderService.Cancel(id));
 
-    private ActionResult<Order> Handle(Func<Order> action)
+    private ActionResult<T> Handle<T>(Func<T> action, Func<T, ActionResult>? onSuccess = null)
     {
         try
         {
-            return Ok(action());
+            var result = action();
+            return onSuccess is null ? Ok(result) : onSuccess(result);
         }
-        catch (OrderNotFoundException)
+        catch (OrderNotFoundException e)
         {
-            return NotFound();
+            return NotFound(e.Message);
+        }
+        catch (InvalidOrderException e)
+        {
+            return BadRequest(e.Message);
         }
         catch (InvalidOrderStatusException e)
         {

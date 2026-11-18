@@ -40,7 +40,19 @@ public class OrderControllerTests
 
         var result = _controller.GetById(99);
 
-        result.Result.Should().BeOfType<NotFoundResult>();
+        result.Result.Should().BeOfType<NotFoundObjectResult>()
+            .Which.Value.Should().Be("Could not find order 99");
+    }
+
+    [Fact]
+    public void Create_WhenDescriptionIsBlank_ReturnsBadRequest()
+    {
+        _orderService.Create(" ").Returns(_ => throw new InvalidOrderException("Description is required"));
+
+        var result = _controller.Create(new CreateOrderRequest(" "));
+
+        result.Result.Should().BeOfType<BadRequestObjectResult>()
+            .Which.Value.Should().Be("Description is required");
     }
 
     [Fact]

@@ -9,8 +9,14 @@ public class OrderService(IOrderRepository repository) : IOrderService
 
     public Order GetById(long id) => repository.FindById(id) ?? throw new OrderNotFoundException(id);
 
-    public Order Create(string description) =>
-        repository.Save(new Order { Description = description, Status = OrderStatus.Ordered });
+    public Order Create(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            throw new InvalidOrderException("Description is required");
+        }
+        return repository.Save(new Order { Description = description, Status = OrderStatus.Ordered });
+    }
 
     public Order Ship(long id) => Transition(id, "ship", OrderStatus.Ordered, OrderStatus.Shipped);
 
