@@ -1,0 +1,12 @@
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+.DS_Store
+.claude/worktrees/
+.claude/settings.local.json

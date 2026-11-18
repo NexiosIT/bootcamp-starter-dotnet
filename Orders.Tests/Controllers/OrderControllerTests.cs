@@ -1,0 +1,57 @@
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using NSubstitute;
+using Orders.Api.Controllers;
+using Orders.Api.Models;
+using Orders.Api.Services;
+
+namespace Orders.Tests.Controllers;
+
+public class OrderControllerTests
+{
+    private readonly IOrderService _orderService = Substitute.For<IOrderService>();
+    private readonly OrderController _controller;
+
+    public OrderControllerTests()
+    {
+        _controller = new OrderController(_orderService);
+    }
+
+    [Fact]
+    public void GetAll_WhenOrdersExist_ReturnsAllOrders()
+    {
+        var orders = new List<Order>
+        {
+            new() { Id = 1, Description = "MacBook Pro", Status = OrderStatus.Ordered },
+            new() { Id = 2, Description = "iPhone", Status = OrderStatus.Shipped }
+        };
+        _orderService.GetAll().Returns(orders);
+
+        var result = _controller.GetAll();
+
+        result.Result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeEquivalentTo(orders);
+    }
+
+    [Fact]
+    public void GetById_WhenOrderDoesNotExist_ReturnsNotFound()
+    {
+        _orderService.GetById(99).Returns(_ => throw new OrderNotFoundException(99));
+
+        var result = _controller.GetById(99);
+
+        result.Result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public void Ship_WhenOrderAlreadyShipped_ReturnsConflict()
+    {
+        _orderService.Ship(2).Returns(_ => throw new InvalidOrderStatusException(
+            "You can't ship an order that is in the SHIPPED status"));
+
+        var result = _controller.Ship(2);
+
+        result.Result.Should().BeOfType<ConflictObjectResult>()
+            .Which.StatusCode.Should().Be(409);
+    }
+}
