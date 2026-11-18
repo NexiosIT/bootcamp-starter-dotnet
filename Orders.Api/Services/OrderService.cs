@@ -24,7 +24,7 @@ public class OrderService(IOrderRepository repository) : IOrderService
         if (order.Status != from)
         {
             throw new InvalidOrderStatusException(
-                $"You can't {action} an order that is in the {order.Status.ToString().ToUpperInvariant()} status");
+                $"Cannot {action} an order with status {order.Status.ToString().ToUpperInvariant()}");
         }
         order.Status = to;
         return repository.Save(order);

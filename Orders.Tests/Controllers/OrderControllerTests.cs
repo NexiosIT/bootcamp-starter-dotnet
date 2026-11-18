@@ -47,7 +47,7 @@ public class OrderControllerTests
     public void Ship_WhenOrderAlreadyShipped_ReturnsConflict()
     {
         _orderService.Ship(2).Returns(_ => throw new InvalidOrderStatusException(
-            "You can't ship an order that is in the SHIPPED status"));
+            "Cannot ship an order with status SHIPPED"));
 
         var result = _controller.Ship(2);
 
