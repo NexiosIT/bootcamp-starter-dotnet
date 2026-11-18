@@ -1,7 +1,7 @@
 #!/bin/bash
+cd "$(dirname "$0")/../.." || exit 0
 INPUT=$(cat)
-[ "$(echo "$INPUT" | jq -r '.stop_hook_active')" = "true" ] && exit 0
-cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
+printf '%s' "$INPUT" | grep -q '"stop_hook_active": *true' && exit 0
 OUT=$(dotnet test --nologo 2>&1)
 if [ $? -ne 0 ]; then
   echo "$OUT" | tail -30 >&2
