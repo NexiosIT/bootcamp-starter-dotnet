@@ -29,8 +29,10 @@ public class OrderControllerTests
 
         var result = _controller.GetAll();
 
-        result.Result.Should().BeOfType<OkObjectResult>()
-            .Which.Value.Should().BeEquivalentTo(orders);
+        var body = result.Result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeAssignableTo<IReadOnlyList<Order>>().Subject;
+        body.Should().BeEquivalentTo(orders);
+        body[0].CreatedAt.Should().NotBe(default);
     }
 
     [Fact]

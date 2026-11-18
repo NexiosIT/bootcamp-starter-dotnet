@@ -5,4 +5,5 @@ public class Order
     public long Id { get; set; }
     public string Description { get; set; } = "";
     public OrderStatus Status { get; set; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 }
